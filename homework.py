@@ -127,7 +127,7 @@ def main():
     error_set = ['test error']
     check_tokens()
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
-    current_timestamp = 1631111111
+    current_timestamp = int(time.time())
     while True:
         try:
             response = get_api_answer(current_timestamp)
