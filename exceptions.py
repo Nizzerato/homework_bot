@@ -1,0 +1,2 @@
+class MissingKey(Exception):
+    pass
