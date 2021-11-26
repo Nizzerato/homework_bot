@@ -122,7 +122,7 @@ def main():
     except Exception as error:
         logging.critical(f'Не хватает переменной окружения! {error}')
     bot = telegram.Bot(token=telegram_token)
-    current_timestamp = 162222222
+    current_timestamp = int(time.time())
     while True:
         try:
             response = get_api_answer(current_timestamp)
