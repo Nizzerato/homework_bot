@@ -12,13 +12,13 @@ from exceptions import MissingKey, ResponseError, SendMessageError
 load_dotenv()
 
 
-practicum_token = os.getenv('PRACTICUM_TOKEN')
-telegram_token = os.getenv('TELEGRAM_TOKEN')
-telegram_chat_id = os.getenv('TELEGRAM_CHAT_ID')
+PRACTICUM_TOKEN = os.getenv('PRACTICUM_TOKEN')
+TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
+TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 
 RETRY_TIME = 600
 ENDPOINT = 'https://practicum.yandex.ru/api/user_api/homework_statuses/'
-HEADERS = {'Authorization': f'OAuth {practicum_token}'}
+HEADERS = {'Authorization': f'OAuth {PRACTICUM_TOKEN}'}
 
 
 HOMEWORK_VERDICTS = {
@@ -55,7 +55,7 @@ logging.getLogger(__name__)
 def send_message(bot, message):
     """Отправка сообщения о статусе работы в телеграм."""
     try:
-        bot.send_message(telegram_chat_id, message)
+        bot.send_message(TELEGRAM_CHAT_ID, message)
         logging.info(SUCCESSFUL_MSG_SENDING.format(message=message))
     except Exception as error:
         raise SendMessageError(
@@ -104,9 +104,9 @@ def parse_status(homework):
 def check_tokens():
     """Проверяет доступность необходимых переменных окружения."""
     tokens = [
-        [telegram_token, None, TOKEN_ERRORS[1]],
-        [telegram_chat_id, None, TOKEN_ERRORS[2]],
-        [practicum_token, None, TOKEN_ERRORS[3]]
+        [TELEGRAM_TOKEN, None, TOKEN_ERRORS[1]],
+        [TELEGRAM_CHAT_ID, None, TOKEN_ERRORS[2]],
+        [PRACTICUM_TOKEN, None, TOKEN_ERRORS[3]]
     ]
     for token, value, error in tokens:
         if token is value:
@@ -122,7 +122,7 @@ def main():
         check_tokens()
     except Exception as error:
         logging.critical(f'Не хватает переменной окружения! {error}')
-    bot = telegram.Bot(token=telegram_token)
+    bot = telegram.Bot(token=TELEGRAM_TOKEN)
     current_timestamp = int(time.time())
     while True:
         try:
