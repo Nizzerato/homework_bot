@@ -39,6 +39,9 @@ HW_NOT_IN_LIST = 'Домашки нет в списке'
 STATUS_UNEXPECTED = 'Неожиданное значение ключа "status": {status}'
 STATUS_SUMMARY = ('Изменился статус проверки работы "{name}". '
                   '\n\n{verdict}')
+TOKEN_ERRORS = ['Отстутствует переменная окружения "TELEGRAM_TOKEN"',
+                'Отстутствует переменная окружения "TELEGRAM_CHAT_ID"',
+                'Отстутствует переменная окружения "PRACTICUM_TOKEN"']
 
 
 logging.basicConfig(
@@ -100,23 +103,21 @@ def parse_status(homework):
 
 def check_tokens():
     """Проверяет доступность необходимых переменных окружения."""
-    if telegram_token is None:
-        logging.critical('Отстутствует переменная '
-                         'окружения "TELEGRAM_TOKEN"')
-        return False
-    if telegram_chat_id is None:
-        logging.critical('Отстутствует переменная окружения '
-                         '"TELEGRAM_CHAT_ID"')
-        return False
-    if practicum_token is None:
-        logging.critical('Отстутствует переменная окружения '
-                         '"PRACTICUM_TOKEN"')
-        return False
+    tokens = [
+        [telegram_token, None, TOKEN_ERRORS[1]],
+        [telegram_chat_id, None, TOKEN_ERRORS[2]],
+        [practicum_token, None, TOKEN_ERRORS[3]]
+    ]
+    for token, value, error in tokens:
+        if token is value:
+            logging.critical(error)
+            return False
     return True
 
 
 def main():
     """Основная логика работы бота."""
+    current_error = 'test error'
     try:
         check_tokens()
     except Exception as error:
@@ -135,8 +136,9 @@ def main():
             time.sleep(RETRY_TIME)
         except Exception as error:
             message = f'Сбой в работе программы: {error}'
+            current_error = message
             logging.error(message, exc_info=True)
-            if ...:
+            if current_error != message:
                 send_message(bot, message)
             time.sleep(30)
 
