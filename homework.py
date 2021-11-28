@@ -66,7 +66,7 @@ def get_api_answer(current_timestamp):
     """Делает запрос к API и, если ответ корректен, выводит его."""
     params = {'from_date': current_timestamp}
     response = requests.get(ENDPOINT, headers=HEADERS, params=params)
-    if 'error' in response:
+    if 'error' in response.json():
         raise ResponseError(f'{response: "error"}')
     if 'code' in response.json():
         raise ResponseError(f'{response: "code"}')
