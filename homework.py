@@ -104,9 +104,9 @@ def parse_status(homework):
 def check_tokens():
     """Проверяет доступность необходимых переменных окружения."""
     tokens = [
-        [TELEGRAM_TOKEN, None, TOKEN_ERRORS[1]],
-        [TELEGRAM_CHAT_ID, None, TOKEN_ERRORS[2]],
-        [PRACTICUM_TOKEN, None, TOKEN_ERRORS[3]]
+        [TELEGRAM_TOKEN, None, TOKEN_ERRORS[0]],
+        [TELEGRAM_CHAT_ID, None, TOKEN_ERRORS[1]],
+        [PRACTICUM_TOKEN, None, TOKEN_ERRORS[2]]
     ]
     for token, value, error in tokens:
         if token is value:
