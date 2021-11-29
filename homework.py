@@ -84,8 +84,9 @@ def check_response(response):
     """Проверяет ответ API на корректность.
     если ответ корректен - выводит список домашних работ.
     """
-    if 'homeworks' not in response:
-        raise MissingKey(HW_NOT_IN_LIST)
+    if isinstance(response, dict): 
+        if 'homeworks' not in response:
+            raise MissingKey(HW_NOT_IN_LIST)
     if not isinstance(response['homeworks'], list):
         raise TypeError(HW_NOT_LIST_ERR)
     return response['homeworks']
