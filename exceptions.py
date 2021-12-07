@@ -8,3 +8,11 @@ class SendMessageError(Exception):
 
 class ResponseError(Exception):
     pass
+
+
+class InvalidResponseCode(Exception):
+    pass
+
+
+class ErrorInResponse(Exception):
+    pass
