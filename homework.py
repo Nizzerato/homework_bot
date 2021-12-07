@@ -144,11 +144,11 @@ def main():
             time.sleep(RETRY_TIME)
         except Exception as error:
             message = RUNTIME_ERROR.format(error=error)
-            if message and homework['id'] in current_error:
+            if message in current_error:
                 logging.error(message, exc_info=True)
             else:
                 if send_message(bot, message) is True:
-                    current_error.append(message, homework['id'])
+                    current_error.append(message)
             time.sleep(120)
 
 
