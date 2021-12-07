@@ -124,7 +124,6 @@ def check_tokens():
 def main():
     """Основная логика работы бота."""
     current_error = []
-    check_tokens()
     if check_tokens() is False:
         logging.critical(RUNTIME_TOKEN_ERROR)
         raise KeyError(RUNTIME_TOKEN_ERROR)
