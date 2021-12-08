@@ -7,7 +7,7 @@ import requests
 import telegram
 from dotenv import load_dotenv
 
-from exceptions import (ErrorInResponse, InvalidResponseCode, MissingKey,
+from exceptions import (ErrorInResponse, WrongResponseCode, MissingKey,
                         SendMessageError)
 
 load_dotenv()
@@ -17,7 +17,7 @@ PRACTICUM_TOKEN = os.getenv('PRACTICUM_TOKEN')
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 
-TOKEN_TUPLE = ('PRACTICUM_TOKEN', 'TELEGRAM_TOKEN', 'TELEGRAM_CHAT_ID')
+TOKENS = ('PRACTICUM_TOKEN', 'TELEGRAM_TOKEN', 'TELEGRAM_CHAT_ID')
 
 RETRY_TIME = 600
 ENDPOINT = 'https://practicum.yandex.ru/api/user_api/homework_statuses/'
@@ -61,8 +61,9 @@ def send_message(bot, message):
         logging.info(SEND_MESSAGE_SUCCESSFUL.format(message=message))
         return True
     except Exception as error:
-        raise SendMessageError(
-            SEND_MESSAGE_ERROR.format(error=error, message=message))
+        logging.error(SendMessageError(
+            SEND_MESSAGE_ERROR.format(error=error, message=message)))
+        return False
 
 
 def get_api_answer(timestamp):
@@ -72,12 +73,11 @@ def get_api_answer(timestamp):
                           params={'from_date': timestamp})
     try:
         response = requests.get(**request_params)
-    except Exception as error:
+    except requests.RequestException as error:
         raise ConnectionError(
-            RESPONSE_ERROR.format(error=error,
-                                  **request_params))
+            RESPONSE_ERROR.format(error=error, **request_params))
     if response.status_code != 200:
-        raise InvalidResponseCode(
+        raise WrongResponseCode(
             RESPONSE_CODE_ERROR.format(response=response.status_code,
                                        **request_params))
     response = response.json()
@@ -114,7 +114,7 @@ def parse_status(homework):
 
 def check_tokens():
     """Проверяет доступность необходимых переменных окружения."""
-    for name in TOKEN_TUPLE:
+    for name in TOKENS:
         if globals()[name] is not None:
             return True
         logging.critical(TOKEN_ERROR.format(name=name))
@@ -123,8 +123,8 @@ def check_tokens():
 
 def main():
     """Основная логика работы бота."""
-    current_error = []
-    if check_tokens() is False:
+    current_error = set()
+    if not check_tokens():
         logging.critical(RUNTIME_TOKEN_ERROR)
         raise KeyError(RUNTIME_TOKEN_ERROR)
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
@@ -134,13 +134,13 @@ def main():
             response = get_api_answer(timestamp)
             homework = check_response(response)[0]
             message = parse_status(homework)
-            if message and homework['id'] not in current_error:
-                if send_message(bot, message) is True:
+            if [message, homework['id']] not in current_error:
+                if send_message(bot, message):
                     timestamp = response.get(
                         'current_date',
                         timestamp
                     )
-                    current_error.append(message, homework['id'])
+                    current_error.update([message, homework['id']])
             time.sleep(RETRY_TIME)
         except Exception as error:
             message = RUNTIME_ERROR.format(error=error)
@@ -148,7 +148,7 @@ def main():
                 logging.error(message, exc_info=True)
             else:
                 if send_message(bot, message) is True:
-                    current_error.append(message)
+                    current_error.add(message)
             time.sleep(120)
 
 

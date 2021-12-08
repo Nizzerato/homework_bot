@@ -10,7 +10,7 @@ class ResponseError(Exception):
     pass
 
 
-class InvalidResponseCode(Exception):
+class WrongResponseCode(Exception):
     pass
 
 
