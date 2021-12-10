@@ -59,11 +59,9 @@ def send_message(bot, message):
     try:
         bot.send_message(TELEGRAM_CHAT_ID, message)
         logging.info(SEND_MESSAGE_SUCCESSFUL.format(message=message))
-        return True
     except Exception as error:
-        logging.error(SendMessageError(
-            SEND_MESSAGE_ERROR.format(error=error, message=message)))
-        return False
+        raise SendMessageError(
+            SEND_MESSAGE_ERROR.format(error=error, message=message))
 
 
 def get_api_answer(timestamp):
