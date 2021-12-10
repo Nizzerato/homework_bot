@@ -124,7 +124,6 @@ def check_tokens():
 
 def main():
     """Основная логика работы бота."""
-    current_error = set()
     if not check_tokens():
         logging.critical(RUNTIME_TOKEN_ERROR)
         raise KeyError(RUNTIME_TOKEN_ERROR)
@@ -133,24 +132,18 @@ def main():
     while True:
         try:
             response = get_api_answer(timestamp)
-            homework = check_response(response)[0]
-            message = parse_status(homework)
-            if [message, homework['id']] not in current_error:
-                if send_message(bot, message):
-                    timestamp = response.get(
-                        'current_date',
-                        timestamp
-                    )
-                    current_error.update([message, homework['id']])
+            message = parse_status(check_response(response)[0])
+            send_message(bot, message)
+            timestamp = response.get(
+                'current_date',
+                timestamp
+            )
             time.sleep(RETRY_TIME)
         except Exception as error:
             message = RUNTIME_ERROR.format(error=error)
-            if message in current_error:
-                logging.error(message, exc_info=True)
-            else:
-                if send_message(bot, message) is True:
-                    current_error.add(message)
-            time.sleep(120)
+            logging.error(message, exc_info=True)
+            send_message(bot, message)
+            time.sleep(1200)
 
 
 if __name__ == '__main__':
