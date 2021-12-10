@@ -7,8 +7,8 @@ import requests
 import telegram
 from dotenv import load_dotenv
 
-from exceptions import (ErrorInResponse, WrongResponseCode, MissingKey,
-                        SendMessageError)
+from exceptions import (ErrorInResponse, MissingKey, SendMessageError,
+                        WrongResponseCode)
 
 load_dotenv()
 
@@ -48,8 +48,8 @@ STATUS_SUMMARY = ('Изменился статус проверки работы
 TOKEN_ERROR = 'Отстутствует переменная окружения {name}'
 RUNTIME_TOKEN_ERROR = 'Не хватает переменной окружения!'
 RUNTIME_ERROR = 'Сбой в работе программы: {error}'
-API_RESPONSE_ERROR = ('Сайт вернул ответ {response} '
-                      'с ошибкой {error}. '
+API_RESPONSE_ERROR = ('Сайт вернул ответ с ошибкой {error}. '
+                      'Текст ошибки: {error_text}'
                       'API: {url}, токен авторизации: {headers}, '
                       'запрос с момента времени: {params}')
 
@@ -81,11 +81,12 @@ def get_api_answer(timestamp):
             RESPONSE_CODE_ERROR.format(response=response.status_code,
                                        **request_params))
     response = response.json()
-    error = ('error', 'code')
-    if error in response:
-        raise ErrorInResponse(
-            API_RESPONSE_ERROR.format(response=response,
-                                      **request_params))
+    for error in ['error', 'code']:
+        if error in response:
+            raise ErrorInResponse(
+                API_RESPONSE_ERROR.format(error=error,
+                                          error_text=response[error],
+                                          **request_params))
     return response
 
 
@@ -114,11 +115,11 @@ def parse_status(homework):
 
 def check_tokens():
     """Проверяет доступность необходимых переменных окружения."""
-    for name in TOKENS:
-        if globals()[name] is not None:
-            return True
-        logging.critical(TOKEN_ERROR.format(name=name))
-    return False
+    token_check = [logging.critical(TOKEN_ERROR.format(name=name))
+                   for name in TOKENS if globals()[name] is None]
+    if token_check:
+        return False
+    return True
 
 
 def main():
